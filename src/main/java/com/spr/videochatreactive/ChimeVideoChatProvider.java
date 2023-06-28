@@ -47,29 +47,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                                 Meeting meeting=ChimeMeetingAdapter.getInstance().createSprMeeting(meetingResult.getMeeting());
                                 return new  ChimeVideoChatConversationProviderDetails(meetingResult.getMeeting().getMeetingId(), meeting);
                             });
-
-
-//                    Mono<Meeting> meeting = meetingResult.flatMap(createMeeting -> {
-//                        return Mono.fromCallable(() -> ChimeMeetingAdapter.getInstance().createSprMeeting(createMeeting.getMeeting()));
-//                    });
-//
-//                   return meetingResult.zipWith(meeting).map(tuple -> {
-//                        return new ChimeVideoChatConversationProviderDetails(tuple.getT1().getMeeting().getMeetingId(), tuple.getT2());
-//                    });
                 });
-//
-//        AmazonChime chimeClient = getChimeApiClient(account);
-//        Tag partnerTag = new Tag().withKey("PARTNER_TAG").withValue(String.valueOf(getCurrentPartnerId()));
-//        CreateMeetingRequest createMeetingRequest = new CreateMeetingRequest().withExternalMeetingId(UUID.randomUUID().toString()).withTags(partnerTag);
-//        Map<String, String> propertiesMap = account.getPropertiesMap();
-//        if (propertiesMap != null && propertiesMap.containsKey(AWS_REGION)) {
-//            createMeetingRequest.setMediaRegion(propertiesMap.get(AWS_REGION));
-//        }
-//
-//        CreateMeetingResult meetingResult = chimeClient.createMeeting(createMeetingRequest);
-//
-//        Meeting meeting = ChimeMeetingAdapter.getInstance().createSprMeeting(meetingResult.getMeeting());
-//        return new ChimeVideoChatConversationProviderDetails(meetingResult.getMeeting().getMeetingId(), meeting);
     }
 
     @Override
@@ -98,14 +76,6 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                              });
 
                  })
-//                 .map(tuple->{
-//                     String meetingId = tuple.getT1();
-//                     CreateAttendeeResult attendeeResult = tuple.getT2();
-//                     Attendee attendee = ChimeAttendeeAdapter.getInstance().createSprAttendee(attendeeResult.getAttendee());
-//                     VideoChatParticipantProviderDetails participantDetails = new ChimeVideoChatParticipantProviderDetails(meetingId, attendeeResult.getAttendee().getAttendeeId(), attendee);
-//                     return (participantDetails);
-//
-//                 })
                  .onErrorResume(throwable -> {
                      if (throwable instanceof NotFoundException) {
                          return Mono.error(new RuntimeException("Meeting already ended"));
@@ -114,27 +84,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                      }
                  });
 
-//        try {
-//            if (!(conversationProviderDetails instanceof ChimeVideoChatConversationProviderDetails)) {
-//                throw new RuntimeException("Invalid conversation provider details");
-//            }
-//            return Mono.fromCallable(()->getChimeApiClient(account))
-//                    .flatMap(chimeClient->{
-//                        String meetingId = ((ChimeVideoChatConversationProviderDetails) conversationProviderDetails).getMeetingId();
-//                      return Mono.fromCallable(()->chimeClient.createAttendee(new CreateAttendeeRequest().withMeetingId(meetingId).withExternalUserId(participantId)))
-//                              .map(attendeeResult-> Tuples.of(meetingId,attendeeResult));
-//
-//                    })
-//                    .map(tuple->{
-//                        String meetingId = tuple.getT1();
-//                        CreateAttendeeResult attendeeResult = tuple.getT2();
-//                        Attendee attendee = ChimeAttendeeAdapter.getInstance().createSprAttendee(attendeeResult.getAttendee());
-//                        Mono<ChimeVideoChatParticipantProviderDetails> just = Mono.fromCallable(new ChimeVideoChatParticipantProviderDetails(meetingId, attendeeResult.getAttendee().getAttendeeId(), attendee));
-//                        return just;
-//                    })
-//        } catch (NotFoundException e) {
-//            throw new RuntimeException("Meeting Already Ended");
-//        }
+
     }
 
     @Override
@@ -151,7 +101,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                     String meetingId=((ChimeVideoChatConversationProviderDetails) conversationProviderDetails).getMeetingId();
 
                    return Mono.fromCallable(()-> chimeClient.createAttendee(new CreateAttendeeRequest().withMeetingId(meetingId).withExternalUserId(participantId)))
-//                           .map(attendeeResult -> Tuples.of(attendeeResult,meetingId))
+
                            .map(attendeeResult ->{
                                Attendee attendee = ChimeAttendeeAdapter.getInstance().createSprAttendee(attendeeResult.getAttendee());
                                VideoChatParticipantProviderDetails videoChatParticipantProviderDetails= new ChimeVideoChatParticipantProviderDetails(meetingId, attendeeResult.getAttendee().getAttendeeId(), attendee);
@@ -159,15 +109,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                            } );
 
                 })
-//                .map(tuple->{
-//
-//                    CreateAttendeeResult attendeeResult=tuple.getT1();
-//                    String meetingId =tuple.getT2();
-//                    Attendee attendee = ChimeAttendeeAdapter.getInstance().createSprAttendee(attendeeResult.getAttendee());
-//                    VideoChatParticipantProviderDetails videoChatParticipantProviderDetails= new ChimeVideoChatParticipantProviderDetails(meetingId, attendeeResult.getAttendee().getAttendeeId(), attendee);
-//                    return  videoChatParticipantProviderDetails;
-//
-//                })
+
                .onErrorResume(throwable -> {
 
                     if (throwable instanceof NotFoundException) {return Mono.error(new RuntimeException("Meeting already ended"));}
@@ -197,22 +139,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                 })
                 .onErrorResume(NotFoundException.class, e -> Mono.just(false));
     }
-//        try {
-//            if (!(participantProviderDetails instanceof ChimeVideoChatParticipantProviderDetails)) {
-//                throw new RuntimeException("Invalid conversation provider details");
-//            }
-//            String meetingId = ((ChimeVideoChatParticipantProviderDetails) participantProviderDetails).getMeetingId();
-//            String attendeeId = ((ChimeVideoChatParticipantProviderDetails) participantProviderDetails).getAttendeeId();
-//            Mono<AmazonChime> chimeClient = getChimeApiClient(account);
-//            DeleteAttendeeRequest attendeeRequest = new DeleteAttendeeRequest();
-//            attendeeRequest.setMeetingId(meetingId);
-//            attendeeRequest.setAttendeeId(attendeeId);
-//            DeleteAttendeeResult deleteAttendeeResult = chimeClient.deleteAttendee(attendeeRequest);
-//            return deleteAttendeeResult.getSdkHttpMetadata().getHttpStatusCode() == 204;
-//        } catch (NotFoundException e) {
-//            //Do Nothing
-//            return false;
-//        }
+
 
 
     @Override
@@ -235,23 +162,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                 .onErrorResume(NotFoundException.class, e -> Mono.just(false))
                 .onErrorResume(Exception.class,e->Mono.just(false));
 
-//        if (!(conversationProviderDetails instanceof ChimeVideoChatConversationProviderDetails)) {
-//            throw new RuntimeException("Invalid conversation provider details");
-//        }
-//        try {
-//            String meetingId = ((ChimeVideoChatConversationProviderDetails) conversationProviderDetails).getMeetingId();
-//            Mono<AmazonChime> chimeClient = getChimeApiClient(account);
-//            DeleteMeetingRequest deleteMeetingRequest = new DeleteMeetingRequest();
-//            deleteMeetingRequest.setMeetingId(meetingId);
-//
-//            DeleteMeetingResult deleteMeetingResult = chimeClient.deleteMeeting(deleteMeetingRequest);
-//
-//            return deleteMeetingResult.getSdkHttpMetadata().getHttpStatusCode() == 204;
-//        } catch (NotFoundException e) {
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
+
     }
 
     @Override
@@ -275,21 +186,6 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                 return Mono.just(false);
             }
         });
-//                .onErrorResume(NotFoundException.class,e->Mono.just(true));
-
-//        if (!(conversationProviderDetails instanceof ChimeVideoChatConversationProviderDetails)) {
-//            throw new RuntimeException("Invalid conversation provider details");
-//        }
-//        try {
-//            Meeting meeting = ((ChimeVideoChatConversationProviderDetails) conversationProviderDetails).getMeeting();
-//            Mono<AmazonChime> apiClient = getChimeApiClient(account);
-//            apiClient.getMeeting(new GetMeetingRequest().withMeetingId(meeting.getMeetingId()));
-//            return false;
-//        } catch (NotFoundException e) {
-//            return true;
-//        } catch (Exception e) {
-//        }
-//        return false;
     }
 
     //Doubt about exception;
@@ -302,9 +198,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                     recordingState.setRecordingProviderTaskId(pipelineResult.getMediaCapturePipeline().getMediaPipelineId());
                     return recordingState;
                 });
-//        CreateMediaCapturePipelineResult pipelineResult = createMediaPipeline(account, videoChatConversation, recordingState.getStartTime());
-//        recordingState.setRecordingProviderTaskId(pipelineResult.getMediaCapturePipeline().getMediaPipelineId());
-//        return recordingState;
+
     }
 
     @Override
@@ -314,7 +208,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
 
     @Override
     public Mono<String> startMediaPipelineForTranscription(Account account, VideoChatConversation videoChatConversation, Long startTime) {
-//        .getMediaCapturePipeline().getMediaPipelineId();
+
         return createMediaPipeline(account, videoChatConversation, startTime)
                 .map(CreateMediaCapturePipelineResult::getMediaCapturePipeline)
                 .map(MediaCapturePipeline::getMediaPipelineId);
@@ -352,9 +246,6 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
 
                 });
 
-//        AmazonChime chimeClient = getChimeApiClient(account);
-
-//        ChimeVideoChatConversationProviderDetails providerDetails = videoChatConversation.providerDetails();
 
         /*
             The structure of the request is as follows:
@@ -400,14 +291,7 @@ public class ChimeVideoChatProvider implements VideoChatProvider {
                 .map(chimeClient->chimeClient.deleteMediaCapturePipeline(new DeleteMediaCapturePipelineRequest().withMediaPipelineId(recordingProviderTaskId)))
                 .onErrorResume(Exception.class,e->Mono.error(e))
                 .then();
-//        return  Mono.fromRunnable(()->{
-//            try {
-//                chimeClient.deleteMediaCapturePipeline(new DeleteMediaCapturePipelineRequest().withMediaPipelineId(recordingProviderTaskId));
-//            } catch (NotFoundException ne) {
-//            } catch (Exception e) {
-//                throw e;
-//            }
-//        });
+
     }
 
 
